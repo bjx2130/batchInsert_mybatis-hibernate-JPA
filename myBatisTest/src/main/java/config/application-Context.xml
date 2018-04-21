@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:data-jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-4.3.xsd
+			http://www.springframework.org/schema/util 
+			http://www.springframework.org/schema/util/spring-util-4.3.xsd
+			http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+			http://www.springframework.org/schema/aop
+			http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/data/jpa
+     		http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd ">
+
+	<!-- 启用spring注解 @Required, @Autowired @Component 等等 -->
+	<context:annotation-config />
+	<!-- 启用切面 @Aspect -->
+	<aop:aspectj-autoproxy/>
+	
+	
+	<!-- 初始化组建扫描 -->
+	<context:component-scan base-package="com.sm.dao,com.sm.aop,com.sm.service" >
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+
+	<!-- 引用的资源文件 -->
+	<context:property-placeholder location="classpath:config/pub-ph.properties"
+								  system-properties-mode="OVERRIDE" />
+	<util:properties id="controller"
+					 location="classpath:config/controller.properties" />
+	
+	
+	<!-- jdbc配置  -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		  destroy-method="close" p:driverClassName="${jdbc.driverClassName}"
+		  p:url="${jdbc.url}" p:username="${jdbc.username}" p:password="${jdbc.password}"
+		  p:maxActive="${jdbc.pool-size}" p:minEvictableIdleTimeMillis="600000"
+		  p:timeBetweenEvictionRunsMillis="900000" p:removeAbandoned="true"
+		  p:logAbandoned="true" p:removeAbandonedTimeout="120" p:maxWait="5000" />
+		  
+	<!-- 3.配置SqlSessionFactory对象 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:config/mybatis-config.xml" />
+		<property name="typeAliasesPackage" value="com.sm.bean" />
+    </bean>
+
+    <!-- 4.配置扫描Dao接口包，动态实现Dao接口，注入到spring容器中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+        <property name="basePackage" value="com.sm.dao" />
+    </bean>
+	
+	
+	<!-- 启用AspectJ方式管理事务=== 此横线以下是Aspect形式事物======================== -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="*"  />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="service" expression="(execution(* com.sm.service..*.*(..)))"/>
+		<aop:advisor pointcut-ref="service" advice-ref="txAdvice"/>
+	</aop:config>
+	<!-- ==================== 此横线以上是Aspect形式事物======================== -->	
+	
+	<!-- 配置事务管理器 -->
+    <bean id="transactionManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- 注入数据库连接池 -->
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- 配置基于注解的声明式事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<!-- 配置Hibernate模式需要的配置信息 -->
+	<beans profile="Hibernate-MODEL">
+
+	</beans>
+
+</beans>

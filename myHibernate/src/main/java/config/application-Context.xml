@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:data-jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-4.3.xsd
+			http://www.springframework.org/schema/util 
+			http://www.springframework.org/schema/util/spring-util-4.3.xsd
+			http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+			http://www.springframework.org/schema/aop
+			http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/data/jpa
+     		http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd ">
+
+	<!-- 启用spring注解 @Required, @Autowired @Component 等等 -->
+	<context:annotation-config />
+	<!-- 启用切面 @Aspect -->
+	<aop:aspectj-autoproxy/>
+	
+	
+	<!-- 初始化组建扫描 -->
+	<context:component-scan base-package="com.sh.dao,com.sh.aop" >
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+
+	<!-- 引用的资源文件 -->
+	<context:property-placeholder location="classpath:config/pub-ph.properties"
+								  system-properties-mode="OVERRIDE" />
+	<util:properties id="controller"
+					 location="classpath:config/controller.properties" />
+	
+	
+	<!-- jdbc配置  -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		  destroy-method="close" p:driverClassName="${jdbc.driverClassName}"
+		  p:url="${jdbc.url}" p:username="${jdbc.username}" p:password="${jdbc.password}"
+		  p:maxActive="${jdbc.pool-size}" p:minEvictableIdleTimeMillis="600000"
+		  p:timeBetweenEvictionRunsMillis="900000" p:removeAbandoned="true"
+		  p:logAbandoned="true" p:removeAbandonedTimeout="120" p:maxWait="5000" />
+		  
+	<!-- 启用注解的方式管理事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" /> 
+
+	<!-- 启用AspectJ方式管理事务=== 此横线以下是Aspect形式事物======================== -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="*"  />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="service" expression="execution(* com.sh.dao..*.*(..))"/>
+		<aop:advisor pointcut-ref="service" advice-ref="txAdvice"/>
+	</aop:config>
+	<!-- ==================== 此横线以上是Aspect形式事物======================== -->	  
+	
+	<!-- JPA配置 -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+	        <property name="dataSource" ref="dataSource"/>
+	        <property name="packagesToScan">  
+	            <list>  
+	                <value>com.sh.bean</value>  
+	            </list>  
+	        </property>  
+	        <property name="hibernateProperties">
+			  <props>
+			   <prop key="hibernate.show_sql">true</prop><!-- 打印sql语句 -->
+			   <prop key="hibernate.format_sql">true</prop><!-- 格式化sql语句 -->
+			   <prop key="hibernate.dialect">MySQL57InnoDB</prop> <!-- 方言用于指定数据库引擎类型 ，mysql默认引擎是 myISAM不支持事务 -->
+			   <prop key="hibernate.hbm2ddl.auto">update</prop> 
+			   <prop key="hibernate.connection.isolation">2</prop>
+			   <!-- 1.refresh() 会强制发送select语句，以使session缓存中对象的状态和数据表中对应的记录保持一致。
+			   		该方法的有效性需要配置事务的隔离级别为read commited(读已提交) 
+			   		2.若记录的id是由底层数据库使用自增的方式生成的，则在save()方法后，就会立即发送insert语句  -->
+				
+			   <!-- 批量插入更新 -->	
+			   <prop key="hibernate.jdbc.batch_size">50</prop><!-- 有效值 10-50 -->				   		
+			   <prop key="hibernate.order_inserts">true</prop><!-- 保存 -->
+			   <prop key="hibernate.order_updates">true</prop><!-- 修改 -->
+			   
+			   <!--****************** 【二级缓存配置】****************** -->  
+			   <prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</prop>
+		       <prop key="hibernate.cache.provider_configuration_file_resource_path">config/ehcache.xml</prop>
+		       <prop key="hibernate.cache.use_second_level_cache">false</prop>  
+        	   <prop key="hibernate.cache.use_query_cache">true</prop>  
+		        
+		        
+			  </props>
+			</property>
+
+	</bean>
+
+	<!-- 事务管理器 -->
+	 <bean id="transactionManager"
+            class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+	
+
+
+	<!-- 配置Hibernate模式需要的配置信息 -->
+	<beans profile="Hibernate-MODEL">
+
+	</beans>
+
+</beans>

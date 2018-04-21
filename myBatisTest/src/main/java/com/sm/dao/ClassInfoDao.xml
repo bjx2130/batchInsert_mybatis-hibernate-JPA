@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.sm.dao.ClassInfoDao">
+  
+  <resultMap id="detailRMap" type="classInfo">
+	  <result property="className" column="className"/>
+	  <collection property="school" ofType="school">
+	    <result property="schoolName" column="schoolName"/>
+	  </collection>
+	</resultMap>
+	
+	
+  <select id="queryAll" resultMap="detailRMap">
+    select * from classInfo c inner join school s on c.schoolId=s.id
+  </select>
+  
+  
+  
+  <insert id="save" >
+  		INSERT INTO `mybatisTest`.`classInfo` (
+		  `className`,
+		  `totalPerson`,
+		  `schoolId`
+		)
+		VALUES
+		  (
+		    #{className},
+		    #{totalPerson},
+		    #{school.id}
+		  );
+  </insert>
+  
+  
+</mapper>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+
+	<!-- 1.自动映射字段 -->
+	<settings>
+		<setting name="autoMappingBehavior" value="FULL" />
+		<setting name="autoMappingUnknownColumnBehavior" value="WARNING" />
+		<setting name="mapUnderscoreToCamelCase" value="true" />
+		<setting name="defaultExecutorType" value="BATCH"/><!--此值为 BATCH 时 session.flushStatements(); 才有用 -->		
+		<setting name="logImpl" value="LOG4J2"/> <!-- 指定所使用的日志框架 --> 
+	</settings>
+
+
+</configuration>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<ehcache>  
+<defaultCache maxElementsInMemory="10000"   
+        eternal="false"   
+        timeToIdleSeconds="1000"   
+        timeToLiveSeconds="1000"  
+        overflowToDisk="false"   
+        memoryStoreEvictionPolicy="LRU"/>  
+</ehcache>  

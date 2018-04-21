@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sm.dao.SchoolDao">
+
+	<!-- 插入数据后，将生成得id设置到keyProperty上 -->
+	<insert id="saveAndGeneratedKey" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO `school` (
+		`schoolName`,
+		`creatDateTime`,
+		`remark`
+		)
+		VALUES
+		(
+		#{schoolName},
+		#{creatDateTime,jdbcType=TIMESTAMP},
+		#{remark}
+		);
+	</insert>
+
+
+	<insert id="batchInsert" useGeneratedKeys="true" >
+		INSERT INTO `school` (
+		`schoolName`,
+		`creatDateTime`,
+		`remark`
+		)
+		VALUES
+		<foreach item="item" collection="list" separator=",">
+			(
+			#{item.schoolName},
+			#{item.creatDateTime,jdbcType=TIMESTAMP},
+			#{item.remark}
+			)
+		</foreach>
+	</insert>
+
+
+
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="debug">
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT" >
+            <PatternLayout
+                    pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <!-- 这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <RollingFile name="RollingFile" fileName="d:/logs/mybatis.log"
+                     filePattern="log/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd 'at' HH:mm:ss z} %-5level %class{36} %L %M - %msg%xEx%n"/>
+            <SizeBasedTriggeringPolicy size="50MB"/>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件，这里设置了20 -->
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+    </appenders>
+    <loggers>
+    	 <!-- 指定要打印日志得包名,并用控制台输出即可   
+    	 <logger name="org.hibernate.SQL" level="trace" >  
+            <appender-ref ref="Console"/>  
+        </logger>
+        <logger name="org.hibernate.type" level="trace" additivity="false">  
+            <appender-ref ref="Console"/>  
+        </logger>-->
+        
+        <logger name="org.hibernate.engine.transaction" level="debug" additivity="false">  
+            <appender-ref ref="Console"/>  
+        </logger>
+        
+        <root level="info" >
+            <appender-ref ref="RollingFile"/>
+            <appender-ref ref="Console" />
+        </root>
+    </loggers>
+</configuration>
