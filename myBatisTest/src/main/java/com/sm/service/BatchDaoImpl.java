@@ -27,7 +27,7 @@ public class BatchDaoImpl implements BatchDao{
 	public void insert() throws Exception{
 		
 		SqlSessionFactory sessionFactory = sessionFactor.getObject();
-		SqlSession session =  sessionFactory.openSession();
+		SqlSession session =  sessionFactory.openSession(ExecutorType.BATCH);
 
 		
 		log.info("------------ 开始执行方法 [ {} ]--------","test");
